@@ -18,20 +18,17 @@ class Push {
     state = b4a.allocUnsafeSlow(STATEBYTES),
     header = b4a.allocUnsafeSlow(HEADERBYTES)
   ) {
-    if (!TAG_FINAL)
+    if (!TAG_FINAL) {
       throw new Error(
         'JavaScript sodium version needs to support crypto_secretstream_xchacha20poly'
       )
+    }
 
     this.key = key
     this.state = state
     this.header = header
 
-    sodium.crypto_secretstream_xchacha20poly1305_init_push(
-      this.state,
-      this.header,
-      this.key
-    )
+    sodium.crypto_secretstream_xchacha20poly1305_init_push(this.state, this.header, this.key)
   }
 
   next(message, cipher = b4a.allocUnsafe(message.byteLength + ABYTES)) {
@@ -46,23 +43,18 @@ class Push {
   }
 
   final(message = EMPTY, cipher = b4a.allocUnsafe(ABYTES)) {
-    sodium.crypto_secretstream_xchacha20poly1305_push(
-      this.state,
-      cipher,
-      message,
-      null,
-      TAG_FINAL
-    )
+    sodium.crypto_secretstream_xchacha20poly1305_push(this.state, cipher, message, null, TAG_FINAL)
     return cipher
   }
 }
 
 class Pull {
   constructor(key, state = b4a.allocUnsafeSlow(STATEBYTES)) {
-    if (!TAG_FINAL)
+    if (!TAG_FINAL) {
       throw new Error(
         'JavaScript sodium version needs to support crypto_secretstream_xchacha20poly'
       )
+    }
 
     this.key = key
     this.state = state
@@ -70,21 +62,11 @@ class Pull {
   }
 
   init(header) {
-    sodium.crypto_secretstream_xchacha20poly1305_init_pull(
-      this.state,
-      header,
-      this.key
-    )
+    sodium.crypto_secretstream_xchacha20poly1305_init_pull(this.state, header, this.key)
   }
 
   next(cipher, message = b4a.allocUnsafe(cipher.byteLength - ABYTES)) {
-    sodium.crypto_secretstream_xchacha20poly1305_pull(
-      this.state,
-      message,
-      TAG,
-      cipher,
-      null
-    )
+    sodium.crypto_secretstream_xchacha20poly1305_pull(this.state, message, TAG, cipher, null)
     this.final = TAG[0] === TAG_FINAL_BYTE
     return message
   }
